@@ -1,0 +1,3 @@
+"""
+StarLab currency exchange package.
+"""
