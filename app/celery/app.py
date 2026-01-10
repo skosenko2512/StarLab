@@ -1,15 +1,33 @@
-import os
+"""
+Celery app.
+"""
 
 from celery import Celery
 
+from app.celery.config import build_beat_schedule
+from app.logger import get_logger
+from app.settings import settings
+
+logger = get_logger(__name__)
+
 
 def create_celery_app() -> Celery:
-    broker_url = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/1")
-    result_backend = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/2")
+    """Create Celery."""
+    app = Celery(
+        "starlab_rates",
+        broker=settings.celery_broker_url,
+        backend=settings.celery_result_backend,
+        include=["app.celery.tasks"],
+    )
+    app.conf.timezone = settings.celery_timezone
+    app.conf.task_default_queue = settings.celery_default_queue
 
-    app = Celery("starlab_rates", broker=broker_url, backend=result_backend)
-    app.conf.timezone = os.getenv("CELERY_TIMEZONE", "UTC")
-    app.conf.task_default_queue = os.getenv("CELERY_DEFAULT_QUEUE", "rates")
+    beat_schedule = build_beat_schedule()
+    if beat_schedule:
+        app.conf.beat_schedule = beat_schedule
+    else:
+        logger.warning("Celery beat schedule not set: invalid or empty cron expression.")
+
     return app
 
 
