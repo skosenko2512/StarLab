@@ -9,7 +9,8 @@ from app.celery.app import celery_app
 from app.database.db import provide_session
 from app.redis import get_redis_client
 from app.services.cbr_client import CbrClient
-from app.services.rates import RatesService
+from app.database.repositories.auto_rate_repo import AutoRateRepo
+from app.domain.exchanger import Exchanger
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +27,9 @@ async def _fetch_and_refresh(*, session) -> None:
     rates = await client.fetch_rates()
 
     redis = get_redis_client()
-    service = RatesService(session=session, redis_client=redis)
     try:
-        await service.upsert_auto_rates(rates)
-        await service.rebuild_effective_snapshot()
+        await AutoRateRepo.upsert_rates(session, rates)
+        exchanger = Exchanger(redis=redis)
+        await exchanger.rebuild_snapshot()
     finally:
         await redis.close()

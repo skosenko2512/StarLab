@@ -5,7 +5,7 @@ Celery app.
 from celery import Celery
 
 from app.celery.config import build_beat_schedule
-from app.logger import get_logger
+from app.handlers.logger import get_logger
 from app.settings import settings
 
 logger = get_logger(__name__)
