@@ -7,7 +7,7 @@ import time
 from fastapi import FastAPI, status
 from fastapi.responses import Response
 
-from app.api import routers
+from app.api import metrics_router, rates_router
 from app.database.db import AsyncSessionFactory
 from app.database.repositories.metrics_repo import MetricsRepo
 
@@ -38,7 +38,8 @@ def create_app() -> FastAPI:
                     pass
         return response
 
-    app.include_router(routers.router)
+    app.include_router(rates_router.router)
+    app.include_router(metrics_router.router)
 
     return app
 
