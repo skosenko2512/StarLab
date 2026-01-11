@@ -9,6 +9,7 @@ from app.adapters.schemas import ConvertRequest, ConvertResponse, ManualRatesReq
 from app.domain.exchanger import Exchanger
 from app.handlers.errors import handle_errors
 from app.redis import get_redis_client
+from app.database.repositories.metrics_repo import MetricsRepo
 
 router = APIRouter()
 
@@ -68,3 +69,8 @@ async def delete_manual_rate_endpoint(currency_code: int) -> None:
         await exchanger.delete_manual_rate(currency_code)
     finally:
         await redis.close()
+
+
+@router.get("/metrics", tags=["metrics"])
+async def get_metrics():
+    return await MetricsRepo.get_percentiles()
