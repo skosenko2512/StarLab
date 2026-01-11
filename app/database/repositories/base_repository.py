@@ -15,6 +15,13 @@ class BaseRepository:
     model = None
 
     @classmethod
+    async def base_insert(cls, *, session: AsyncSession, values: dict[str, Any]) -> Any:
+        obj = cls.model(**values)
+        session.add(obj)
+        await session.commit()
+        return obj
+
+    @classmethod
     async def get_by_filter(
         cls,
         *,
